@@ -17,7 +17,7 @@ include_directories(
 )
 
 #実行ファイルの設定
-add_executable(${PROJECT_NAME} main.cpp Shape.h Window.h Matrix.h)
+add_executable(${PROJECT_NAME} main.cpp)
 
 #リンクするライブラリ
 target_link_libraries(${PROJECT_NAME}
