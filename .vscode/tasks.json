@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build and run",
+      "type": "shell",
+      "command": "mingw32-make",
+      "options": {
+        "cwd": "${workspaceFolder}/build"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "silent", // ターミナルを常に表示
+        "echo": true,
+        "focus": true,
+        "panel": "shared" // 既存のターミナルを使用
+      },
+      "problemMatcher": []
+    }
+  ]
+} 
