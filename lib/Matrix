@@ -1,0 +1,6 @@
+#include "Window.h" 
+#include "Matrix.h"
+#include "Shape.h"
+#include "ShapeIndex.h"
+#include "SolidShapeIndex.h"
+#include "SolidShape.h"
