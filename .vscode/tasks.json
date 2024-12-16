@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "build and run",
+      "label": "make and create .exe",
       "type": "shell",
       "command": "mingw32-make",
       "options": {

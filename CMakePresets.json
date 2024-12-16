@@ -14,18 +14,6 @@
                 "CMAKE_C_COMPILER": "clang",
                 "CMAKE_CXX_COMPILER": "clang++"
             }
-        },
-        {
-            "name": "ツールチェーン ファイルを使用してプリセットを構成する",
-            "displayName": "ツールチェーン ファイルを使用してプリセットを構成する",
-            "description": "Ninja ジェネレーター、ビルド、インストール ディレクトリを設定します",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/out/build/${presetName}",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_TOOLCHAIN_FILE": "",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
-            }
         }
     ]
 }

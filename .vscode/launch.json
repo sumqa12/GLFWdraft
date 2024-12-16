@@ -4,7 +4,7 @@
     {
       "type": "cppdbg",
       "request": "launch",
-      "name": "EXE実行",
+      "name": "make and create .exe",
       "program": "${workspaceFolder}/build/glfwdraft",
       "args": [],
       "stopAtEntry": false,
@@ -19,7 +19,7 @@
           "ignoreFailures": false
         }
       ],
-      "preLaunchTask": "build and run"
+      "preLaunchTask": "make and create .exe"
     }
   ]
 }
