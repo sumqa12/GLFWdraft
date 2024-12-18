@@ -8,16 +8,30 @@ class Uniform {
     struct UniformBuffer{
         // ユニフォームバッファオブジェクト名
         GLuint ubo;
+        
+        // ユニフォームブロックのサイズ
+        GLsizeiptr blocksize;
 
         // コンストラクタ
         //  data: uniformプロックに格納するデータ
-        UniformBuffer(const Type *data) {
+        //  count: 確保するuniformブロックの数
+        UniformBuffer(const Type *data, unsigned int count) {
+            // ユニフォームブロックのサイズを求める
+            GLint alignment;
+            glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &alignment);
+            blocksize = (((sizeof (Type) - 1) / alignment) + 1) * alignment;
+
             // ユニフォームバッファオブジェクトを作成
             glGenBuffers(1, &ubo);
             glBindBuffer(GL_UNIFORM_BUFFER, ubo);
             glBufferData(
-                GL_UNIFORM_BUFFER , sizeof (Type), data, GL_STATIC_DRAW
+                GL_UNIFORM_BUFFER , count * blocksize, NULL, GL_STATIC_DRAW
             );
+            for (unsigned int i = 0; i < count; i++) {
+                glBufferSubData(
+                    GL_UNIFORM_BUFFER, i * blocksize, sizeof (Type), data + i
+                );
+            }
         }
 
         // デストラクタ
@@ -34,8 +48,9 @@ public:
 
     // コンストラクタ
     //  data: uniformブロックに格納するデータ
-    Uniform(const Type *data = NULL)
-        : buffer(new UniformBuffer(data))
+    //  count: 確保するuniformブロックの数
+    Uniform(const Type *data = NULL, unsigned int count = 1)
+        : buffer(new UniformBuffer(data, count))
     {}
 
     // デストラクタ
@@ -44,19 +59,26 @@ public:
 
     // ユニフォームバッファオブジェクトにデータを格納
     //  data: uniformブロックに格納するデータ
-    void set(const Type *data) const {
+    //  start: データを格納するuniformブロックの先頭位置
+    //  count: データを格納するuniformプロックの数
+    void set(const Type *data, unsigned int start = 0, unsigned int count = 1) const {
         glBindBuffer(GL_UNIFORM_BUFFER, buffer->ubo);
-        glBufferSubData(
-            GL_UNIFORM_BUFFER, 0, sizeof (Type), data
-        );
+        for (unsigned int i = 0; i < count; i++) {
+            glBufferSubData(
+                GL_UNIFORM_BUFFER, (start + i) * buffer->blocksize,
+                sizeof (Type), data + i
+            );
+        }
     }
 
     // このユニフォームバッファオブジェクトを使用
     //  bp: 結合ポイント
-    void select(GLuint bp) const {
+    //  i : 結合するuniformブロックの位置 
+    void select(GLuint bp, unsigned int i = 0) const {
         // 材質に設定するユニフォームバッファオブジェクトを指定
-        glBindBufferBase(
-            GL_UNIFORM_BUFFER, bp, buffer->ubo
+        glBindBufferRange(
+            GL_UNIFORM_BUFFER, bp, buffer->ubo,
+            i * buffer->blocksize, sizeof (Type)
         );
     }
 };
