@@ -133,7 +133,11 @@
     "__split_buffer": "cpp",
     "__tree": "cpp",
     "queue": "cpp",
-    "stack": "cpp"
+    "stack": "cpp",
+    "print": "cpp",
+    "__bit_reference": "cpp",
+    "ios": "cpp",
+    "locale": "cpp"
   },
   "commentTranslate.hover.enabled": false,
   "glsllint.glslangValidatorPath": "",
