@@ -460,9 +460,9 @@ int main()
     // 光源データ
     GLfloat r = 0, g = 0, b = 0;
     static const int Lcount(2);
-    static constexpr Vector Lpos[] = {0.0f, 0.0f, 5.0f, 1.0f, 8.0f, 0.0f, 0.0f, 1.0f};
+    static constexpr Vector Lpos[] = {0.0f, 0.0f, 5.0f, 1.0f, 0.0f, 5.0f, 0.0f, 1.0f};
     static constexpr GLfloat Lamb[] = {0.2f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f};
-    static  GLfloat Ldiff[] = {1, 0.5f, 0.5f, 0.9f, 0.9f, 0.9f};
+    static  GLfloat Ldiff[] = {1, 0.5f, 0.5f, 0.9f, 0.2f, 0.6f};
     static constexpr GLfloat Lspec[] = {1.0f, 0.5f, 0.5f, 0.9f, 0.9f, 0.9f};
 
     // 色データ
@@ -472,7 +472,7 @@ int main()
         {0.1f, 0.1f, 0.5f, 0.1f, 0.1f, 0.5f, 0.4f, 0.4f, 0.4f, 60.0f}
     };
 
-    const Uniform<Material> material[] = {&color[0], &color[1]};
+    const Uniform<Material> material(color, 2);
 
     // タイマーを0にセット
     glfwSetTime(0.0);
@@ -549,7 +549,7 @@ int main()
         glUniform3fv(LspecLoc, Lcount , Lspec);
 
         // 図形の描画
-        material[0].select(0);
+        material.select(0, 0);
         shape->draw();
 
         // 二つ目のモデルビュー変換行列を求める
@@ -563,7 +563,7 @@ int main()
         glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, normalMatrix);
 
         // 二つ目の図形の描画
-        material[1].select(0);
+        material.select(0, 1);
         shape->draw();
 
         // カラーバッファを入れ替え
