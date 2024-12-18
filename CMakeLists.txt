@@ -17,7 +17,7 @@ include_directories(
 )
 
 #実行ファイルの設定
-add_executable(${PROJECT_NAME} main.cpp)
+add_executable(${PROJECT_NAME} main.cpp lib/Matrix)
 
 #リンクするライブラリ
 target_link_libraries(${PROJECT_NAME}
