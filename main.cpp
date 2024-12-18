@@ -13,7 +13,7 @@ using GLchar = char;
 using namespace std;
 // シェーダオブジェクトのコンパイル結果を表示する
 //  shader: シェーダオブジェクト名
-//  str: コンパイルエラーが発生した場所を表す文字列
+//  str: コンパイルエラーが発生した場所をす文字列
 GLboolean printShaderInfoLog(GLuint shader, const char *str)
 {
     // コンパイル結果を取得
@@ -399,6 +399,12 @@ int main()
     const GLint LdiffLoc(glGetUniformLocation(program, "Ldiff"));
     const GLint LspecLoc(glGetUniformLocation(program, "Lspec"));
 
+    // uniform blockの場所を取得
+    const GLint materialLoc(glGetUniformBlockIndex(program, "Material"));
+
+    // uniform blockの場所を0番の結合ポインタに結び付ける
+    glUniformBlockBinding(program, materialLoc, 0);
+
     // 球の分割数
     const int slices(32), stacks(16);
 
@@ -453,10 +459,20 @@ int main()
 
     // 光源データ
     GLfloat r = 0, g = 0, b = 0;
-    static constexpr Vector Lpos = {0.0f, 0.0f, 2.4f, 1.0f};
-    static constexpr GLfloat Lamb[] = {0.2f, 0.1f, 0.1f};
-    static  GLfloat Ldiff[] = {1, 1, 1};
-    static constexpr GLfloat Lspec[] = {1.0f, 0.5f, 0.5f};
+    static const int Lcount(2);
+    static constexpr Vector Lpos[] = {0.0f, 0.0f, 5.0f, 1.0f, 8.0f, 0.0f, 0.0f, 1.0f};
+    static constexpr GLfloat Lamb[] = {0.2f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f};
+    static  GLfloat Ldiff[] = {1, 0.5f, 0.5f, 0.9f, 0.9f, 0.9f};
+    static constexpr GLfloat Lspec[] = {1.0f, 0.5f, 0.5f, 0.9f, 0.9f, 0.9f};
+
+    // 色データ
+    static constexpr Material color[] = {
+        //     Kamb       |     Kdiff       |     Kspec       | Kshi
+        {0.6f, 0.6f, 0.2f, 0.6f, 0.6f, 0.2f, 0.3f, 0.3f, 0.3f, 30.0f},
+        {0.1f, 0.1f, 0.5f, 0.1f, 0.1f, 0.5f, 0.4f, 0.4f, 0.4f, 60.0f}
+    };
+
+    const Uniform<Material> material[] = {&color[0], &color[1]};
 
     // タイマーを0にセット
     glfwSetTime(0.0);
@@ -526,12 +542,14 @@ int main()
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, projection.data());
         glUniformMatrix4fv(modelviewLoc, 1, GL_FALSE, modelview.data()); 
         glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, normalMatrix);
-        glUniform4fv(LposLoc, 1 , (view * Lpos).data());
-        glUniform3fv(LambLoc, 1 , Lamb);
-        glUniform3fv(LdiffLoc, 1 , Ldiff);
-        glUniform3fv(LspecLoc, 1 , Lspec);
+        for (int i = 0; i < Lcount; i++)
+            glUniform4fv(LposLoc + i, 1 , (view * Lpos[i]).data());
+        glUniform3fv(LambLoc, Lcount , Lamb);
+        glUniform3fv(LdiffLoc, Lcount , Ldiff);
+        glUniform3fv(LspecLoc, Lcount , Lspec);
 
         // 図形の描画
+        material[0].select(0);
         shape->draw();
 
         // 二つ目のモデルビュー変換行列を求める
@@ -545,6 +563,7 @@ int main()
         glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, normalMatrix);
 
         // 二つ目の図形の描画
+        material[1].select(0);
         shape->draw();
 
         // カラーバッファを入れ替え
