@@ -13,7 +13,7 @@ using GLchar = char;
 using namespace std;
 // シェーダオブジェクトのコンパイル結果を表示する
 //  shader: シェーダオブジェクト名
-//  str: コンパイルエラーが発生した場所をす文字列
+//  str: コンパイルエラーが発生した場所を表す文字列
 GLboolean printShaderInfoLog(GLuint shader, const char *str)
 {
     // コンパイル結果を取得
@@ -145,7 +145,7 @@ GLuint createProgram(const char *vsrc, const char *fsrc)
 
 // シェーダのソースファイルを読み込んだメモリを返す
 //  name: シェーダのソースファイル名
-//  buffer: 読み込んだよースファイルのテキスト
+//  buffer: 読み込んだソースファイルのテキスト
 vector<GLchar> readShaderSource(const char *name, std::vector<GLchar> &buffer)
 {
     vector<GLchar> nullVec;
@@ -354,7 +354,7 @@ int main()
         return 1;
     }
 
-    // プログラム終時の処理の登録
+    // プログラム終了時の処理の登録
     atexit(glfwTerminate);
 
     // OpenGL Version 4.6 Core Profile を選択
