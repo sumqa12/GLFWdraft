@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <cmath>
+#include <random>
 #include <GL/glew.h>
 #include <GL/glfw3.h>
 #include "lib/Matrix"
@@ -392,7 +393,11 @@ int main()
     // uniform変数の場所を取得
     const GLint modelviewLoc(glGetUniformLocation(program, "modelview"));
     const GLint projectionLoc(glGetUniformLocation(program, "projection"));
-    const GLint normalMatrixLoc(glGetUniformLocation(program, "normalmatrix"));
+    const GLint normalMatrixLoc(glGetUniformLocation(program, "normalMatrix"));
+    const GLint LposLoc(glGetUniformLocation(program, "Lpos"));
+    const GLint LambLoc(glGetUniformLocation(program, "Lamb"));
+    const GLint LdiffLoc(glGetUniformLocation(program, "Ldiff"));
+    const GLint LspecLoc(glGetUniformLocation(program, "Lspec"));
 
     // 球の分割数
     const int slices(32), stacks(16);
@@ -446,6 +451,13 @@ int main()
         static_cast<GLsizei>(solidSphereIndex.size()), solidSphereIndex.data())
     );
 
+    // 光源データ
+    GLfloat r = 0, g = 0, b = 0;
+    static constexpr Vector Lpos = {0.0f, 0.0f, 2.4f, 1.0f};
+    static constexpr GLfloat Lamb[] = {0.2f, 0.1f, 0.1f};
+    static  GLfloat Ldiff[] = {1, 1, 1};
+    static constexpr GLfloat Lspec[] = {1.0f, 0.5f, 0.5f};
+
     // タイマーを0にセット
     glfwSetTime(0.0);
     
@@ -453,11 +465,25 @@ int main()
     printf("OpenGL ver.: %s\n", glGetString(GL_VERSION));
     printf("GLSL ver.: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
-    // ウィンドウが開いている間
+
+    std::mt19937 engine{std::random_device{}()};
+    std::uniform_real_distribution<float> dist(0, 1);
+    
     GLfloat lg = 0;
     bool lf = false;
+    bool rgb = false;
+    // ウィンドウが開いている間
     while (window)
     {
+        if (r >= 1) rgb = true;
+        else if (r <= 0)rgb = false;
+        if (rgb) r -= 0.01f;
+        else r += 0.01f;
+        // Ldiff[0] = r;
+        // Ldiff[1] = r;
+        // Ldiff[2] = r;
+        
+
         if (lg >= 180.0f) lg = 0;
         else lg += 0.1f;
 
@@ -478,7 +504,7 @@ int main()
         const GLfloat *const modelLoc(window.getModelLoc());
         const GLfloat *const mouseLoc(window.getMouseLoc());
 
-            printf("x, y: %.2f, %.2f\n", mouseLoc[0], mouseLoc[1]);
+        printf("x, y: %.2f, %.2f\n", mouseLoc[0], mouseLoc[1]);
 
         const Matrix rx(Matrix::rotateAxis(mouseLoc[0] * 2, 0.0f, 1.0f, 0.0f));
         const Matrix ry(Matrix::rotateAxis(mouseLoc[1] * 2, 1.0f, 0.0f, 0.0f));
@@ -499,8 +525,11 @@ int main()
         // uniform 変数に値を設定する 
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, projection.data());
         glUniformMatrix4fv(modelviewLoc, 1, GL_FALSE, modelview.data()); 
-        glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, normalMatrix); 
-    
+        glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, normalMatrix);
+        glUniform4fv(LposLoc, 1 , (view * Lpos).data());
+        glUniform3fv(LambLoc, 1 , Lamb);
+        glUniform3fv(LdiffLoc, 1 , Ldiff);
+        glUniform3fv(LspecLoc, 1 , Lspec);
 
         // 図形の描画
         shape->draw();

@@ -26,7 +26,7 @@ public:
         GLfloat position[3];
 
         // 色
-        GLfloat nromal[3];
+        GLfloat normal[3];
     };
     
     // コンストラクタ
@@ -57,7 +57,7 @@ public:
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(
             1, 3, GL_FLOAT, GL_FALSE,
-            sizeof (Vertex), static_cast<Vertex *>(0)->nromal
+            sizeof (Vertex), static_cast<Vertex *>(0)->normal
         );
         glEnableVertexAttribArray(1);
 
