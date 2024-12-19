@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <cmath>
+#include <random>
 #include <GL/glew.h>
 #include <GL/glfw3.h>
 #include "lib/Matrix"
@@ -144,7 +145,7 @@ GLuint createProgram(const char *vsrc, const char *fsrc)
 
 // シェーダのソースファイルを読み込んだメモリを返す
 //  name: シェーダのソースファイル名
-//  buffer: 読み込んだよースファイルのテキスト
+//  buffer: 読み込んだソースファイルのテキスト
 vector<GLchar> readShaderSource(const char *name, std::vector<GLchar> &buffer)
 {
     vector<GLchar> nullVec;
@@ -353,7 +354,7 @@ int main()
         return 1;
     }
 
-    // プログラム終時の処理の登録
+    // プログラム終了時の処理の登録
     atexit(glfwTerminate);
 
     // OpenGL Version 4.6 Core Profile を選択
@@ -392,7 +393,17 @@ int main()
     // uniform変数の場所を取得
     const GLint modelviewLoc(glGetUniformLocation(program, "modelview"));
     const GLint projectionLoc(glGetUniformLocation(program, "projection"));
-    const GLint normalMatrixLoc(glGetUniformLocation(program, "normalmatrix"));
+    const GLint normalMatrixLoc(glGetUniformLocation(program, "normalMatrix"));
+    const GLint LposLoc(glGetUniformLocation(program, "Lpos"));
+    const GLint LambLoc(glGetUniformLocation(program, "Lamb"));
+    const GLint LdiffLoc(glGetUniformLocation(program, "Ldiff"));
+    const GLint LspecLoc(glGetUniformLocation(program, "Lspec"));
+
+    // uniform blockの場所を取得
+    const GLint materialLoc(glGetUniformBlockIndex(program, "Material"));
+
+    // uniform blockの場所を0番の結合ポインタに結び付ける
+    glUniformBlockBinding(program, materialLoc, 0);
 
     // 球の分割数
     const int slices(32), stacks(16);
@@ -446,6 +457,23 @@ int main()
         static_cast<GLsizei>(solidSphereIndex.size()), solidSphereIndex.data())
     );
 
+    // 光源データ
+    GLfloat r = 0, g = 0, b = 0;
+    static const int Lcount(2);
+    static constexpr Vector Lpos[] = {0.0f, 0.0f, 5.0f, 1.0f, 0.0f, 5.0f, 0.0f, 1.0f};
+    static constexpr GLfloat Lamb[] = {0.2f, 0.1f, 0.1f, 0.1f, 0.1f, 0.1f};
+    static  GLfloat Ldiff[] = {1, 0.5f, 0.5f, 0.9f, 0.2f, 0.6f};
+    static constexpr GLfloat Lspec[] = {1.0f, 0.5f, 0.5f, 0.9f, 0.9f, 0.9f};
+
+    // 色データ
+    static constexpr Material color[] = {
+        //     Kamb       |     Kdiff       |     Kspec       | Kshi
+        {0.6f, 0.6f, 0.2f, 0.6f, 0.6f, 0.2f, 0.3f, 0.3f, 0.3f, 30.0f},
+        {0.1f, 0.1f, 0.5f, 0.1f, 0.1f, 0.5f, 0.4f, 0.4f, 0.4f, 60.0f}
+    };
+
+    const Uniform<Material> material(color, 2);
+
     // タイマーを0にセット
     glfwSetTime(0.0);
     
@@ -453,11 +481,25 @@ int main()
     printf("OpenGL ver.: %s\n", glGetString(GL_VERSION));
     printf("GLSL ver.: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
-    // ウィンドウが開いている間
+
+    std::mt19937 engine{std::random_device{}()};
+    std::uniform_real_distribution<float> dist(0, 1);
+    
     GLfloat lg = 0;
     bool lf = false;
+    bool rgb = false;
+    // ウィンドウが開いている間
     while (window)
     {
+        if (r >= 1) rgb = true;
+        else if (r <= 0)rgb = false;
+        if (rgb) r -= 0.01f;
+        else r += 0.01f;
+        // Ldiff[0] = r;
+        // Ldiff[1] = r;
+        // Ldiff[2] = r;
+        
+
         if (lg >= 180.0f) lg = 0;
         else lg += 0.1f;
 
@@ -478,7 +520,7 @@ int main()
         const GLfloat *const modelLoc(window.getModelLoc());
         const GLfloat *const mouseLoc(window.getMouseLoc());
 
-            printf("x, y: %.2f, %.2f\n", mouseLoc[0], mouseLoc[1]);
+        printf("x, y: %.2f, %.2f\n", mouseLoc[0], mouseLoc[1]);
 
         const Matrix rx(Matrix::rotateAxis(mouseLoc[0] * 2, 0.0f, 1.0f, 0.0f));
         const Matrix ry(Matrix::rotateAxis(mouseLoc[1] * 2, 1.0f, 0.0f, 0.0f));
@@ -499,10 +541,15 @@ int main()
         // uniform 変数に値を設定する 
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, projection.data());
         glUniformMatrix4fv(modelviewLoc, 1, GL_FALSE, modelview.data()); 
-        glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, normalMatrix); 
-    
+        glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, normalMatrix);
+        for (int i = 0; i < Lcount; i++)
+            glUniform4fv(LposLoc + i, 1 , (view * Lpos[i]).data());
+        glUniform3fv(LambLoc, Lcount , Lamb);
+        glUniform3fv(LdiffLoc, Lcount , Ldiff);
+        glUniform3fv(LspecLoc, Lcount , Lspec);
 
         // 図形の描画
+        material.select(0, 0);
         shape->draw();
 
         // 二つ目のモデルビュー変換行列を求める
@@ -516,6 +563,7 @@ int main()
         glUniformMatrix3fv(normalMatrixLoc, 1, GL_FALSE, normalMatrix);
 
         // 二つ目の図形の描画
+        material.select(0, 1);
         shape->draw();
 
         // カラーバッファを入れ替え

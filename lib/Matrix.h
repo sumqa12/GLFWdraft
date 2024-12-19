@@ -23,7 +23,7 @@ public:
     // 行列の要素を右辺値として参照する 
     const GLfloat &operator[](std::size_t i) const 
     { 
-        return matrix[i]; 
+        return matrix[i];       
     } 
     
     // 行列の要素を左辺値として参照する 
@@ -231,11 +231,6 @@ public:
 
         const int size = 16;
         const GLfloat* data = rx.data();
-
-        for (int i = 0; i < size; ++i) {
-            printf("%f\n", data[i]);
-        }
-
 
         return rx * ry * rz;
     }

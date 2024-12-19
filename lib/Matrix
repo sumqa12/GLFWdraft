@@ -4,3 +4,6 @@
 #include "ShapeIndex.h"
 #include "SolidShapeIndex.h"
 #include "SolidShape.h"
+#include "Vector.h"
+#include "Material.h"
+#include "Uniform.h"
